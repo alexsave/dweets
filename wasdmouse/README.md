@@ -4,8 +4,7 @@ https://www.dwitter.net/d/34522
 
 But how does it work?
 
-## Inspiration
-### Original d/23034 (minified)
+## Original
 A lot of the logic was created by the original https://www.dwitter.net/d/23034 , but a bit simplified and reworked to get WASD buttons working. Here is the original, for reference.
 
 ```js
