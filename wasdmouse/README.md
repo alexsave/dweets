@@ -408,7 +408,6 @@ for(let j = canvasWidth;j;){
 Alright now for `onkeydown` and `J`.
 This is the key to WASD functionality.
 In the dweet, `J` has "holes" in it that we can put some event handlers, and you'll see why these holes are here.
-:w
 
 And to be honest, there's some linear algebra here that I don't fully understand.
 I had to muddle with it, swapping order and changing signs to get it to work. 
