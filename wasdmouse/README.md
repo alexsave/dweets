@@ -31,7 +31,7 @@ if(t){
 }
 
 a=S(R);
-b=C(R)
+b=C(R);
 
 for(;j;d+=.1){
     A=j/w*d-d/2
@@ -219,22 +219,6 @@ if (t) {
     X=Z=7
 }
 w=(j=(c.width|=7))
-onmousemove=e=>T=e.x/90;
-onkeydown=e=>(X+=J[i=e.which&6]/9,Z+=J[i+2&6]/9);
-J=[
-    b=C(T),
-    ,
-    a=S(T),
-    ,
-    -b,
-    ,
-    -a
-]
-for(;j;){
-    R=X-R*S(D=T+j/w-.5)&Z+R*C(D)
-        ?R+.1
-        :!x.fillRect(j--,540-1e3/R,2/R,w/R)
-}
 ```
 
 That if else on `t` is critical.
@@ -255,22 +239,6 @@ if (time === 0){
     xPos = 7;
 }
 w=(j=(c.width|=7))
-onmousemove=e=>T=e.x/90;
-onkeydown=e=>(xPos+=J[i=e.which&6]/9,zPos+=J[i+2&6]/9);
-J=[
-    b=C(T),
-    ,
-    a=S(T),
-    ,
-    -b,
-    ,
-    -a
-]
-for(;j;){
-    R=xPos-R*S(D=T+j/w-.5)&zPos+R*C(D)
-        ?R+.1
-        :!x.fillRect(j--,540-1e3/R,2/R,w/R)
-}
 ```
 
 Now for the `w=j=...` line.
@@ -278,7 +246,6 @@ The first thing that happens is `c.width|=7` (or `J` in the actual dweet).
 We can't do `c.width=`, as it would set the width to 7 and mess everything up.
 But `c.width = c.width | 7` is fine.
 Setting `c.width` is standard practice in dwitter to clear the screen.
-It just works.
 Ex: https://www.dwitter.net/d/3760
 
 We then set `j` to `c.width`, as well as `w`.
@@ -316,6 +283,11 @@ for(let j = canvasWidth;j;){
 
 ## Mouse input
 Alright now let's look at `onmousemove`.
+
+```js
+onmousemove=e=>T=e.x/90;
+```
+
 This handler just takes the x component of the mouse event, divides it by 90, and assigns that value to `T`.
 `T` is used specifically because it is already defined in dwitter, as `T= Math.tan`.
 By using it, we can avoid an extra `T=` and avoid undefined issues when we try to render. As you can see, `T` is used in the for loop.
@@ -341,30 +313,8 @@ I considered doing just `e.x/9` to save an extra character, but that is still ve
 With all that considered, let's give `T` and the first `e` proper names.
 
 ```js
-let time = t;
-if (time === 0){
-    zPos = 7;
-    xPos = 7;
-}
-c.width = c.width | 7;
-let canvasWidth = c.width;
 onmousemove = (mouseEvent) => {
     angle = mouseEvent.x/90;
-}
-onkeydown=e=>(xPos+=J[i=e.which&6]/9,zPos+=J[i+2&6]/9);
-J=[
-    b=C(angle),
-    ,
-    a=S(angle),
-    ,
-    -b,
-    ,
-    -a
-]
-for(let j = canvasWidth;j;){
-    R=xPos-R*S(D=angle+j/canvasWidth-.5)&zPos+R*C(D)
-        ?R+.1
-        :!x.fillRect(j--,540-1e3/R,2/R,canvasWidth/R)
 }
 ```
 
@@ -403,20 +353,28 @@ for(let j = canvasWidth;j;){
 }
 ```
 
-
 ## Keyboard input
 Alright now for `onkeydown` and `J`.
 This is the key to WASD functionality.
 In the dweet, `J` has "holes" in it that we can put some event handlers, and you'll see why these holes are here.
 
-And to be honest, there's some linear algebra here that I don't fully understand.
-I had to muddle with it, swapping order and changing signs to get it to work. 
-The mouse handler was also `e=>T=e.x/-90` at some point, and I somehow figured out a way to remove the negative sign.
+```js
+onkeydown=e=>(xPos+=J[i=e.which&6]/9,zPos+=J[i+2&6]/9);
+J=[
+    b=C(angle),
+    ,
+    a=S(angle),
+    ,
+    -b,
+    ,
+    -a
+]
+```
 
 A lot of credit to this dweet too: https://www.dwitter.net/d/29581 .
 I took some inspiration from how they used `e.which` to map to a direction, and expanded on it a bit.
 
-Let's start with this: we need to handle keys WASD.
+Now: we need to handle the WASD keys.
 The `which` property, while deprecated, is the shortest way to turn these into numbers.
 Great for dwitter code golfing hacks.
 https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/which
@@ -424,6 +382,11 @@ https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/which
 If you do `onkeydown=e=>console.log(e.which)`, you'll see that a,s,d, and w corresponds to
 65, 83, 68, and 87.
 The best part about these four numbers is that if you do `&6`, you get...
+
+```js
+e.which&6
+```
+
 0, 2, 4, and 6.
 This `&6` was not super obvious, and I had to try a few different operations to get it to a nice orderly sequence.
 Nice quirk of the alphabet I guess.
@@ -434,9 +397,10 @@ In the dweet mentioned above, lewdev used `e.which%32%17`, which is similar but 
 |:--------------------:|:------:|:------:|:------:|:------:|
 | `e.which`            |   65   |   83   |   68   |   87   |
 | Binary `e.which`   |`1000001`|`1010011`|`1000100`|`1010111`|
-|  Binary 6       |      `0000110   `|      `0000110   `|   `   0000110   `|      `0000110   `|
+|  Binary 6       |      `0000110`|      `0000110`|   `0000110`|      `0000110`|
 | Binary `e.which & 6` |`0000000`|`0000010`|`0000100`|`0000110`|
 | Final Result         |   0    |   2    |   4    |   6    |
+
 
 Now let's talk about the linear algebra side of this.
 If we want to move in a 2d space, which is what this really is, while also being able to pan around, it's not as simple as `X+=1,Z+=0` for up.
@@ -447,12 +411,11 @@ Same for A, S, and D.
 If we move in the same direction as the angle we're facing (`angle`), we need to move X in `some amount * cos(angle)`, and Z in `some amount * SIN(angle)`.
 If we want to move backwards, for S, we need to move X `some amount * -COS(angle)`, and Z `some amount * -SIN(angle)`.
 
-I'll just tell you that "some amount" is `1/9`, as you might be able to see in the `onkeydown` function.
+"some amount" is `1/9`, as you might be able to see in the `onkeydown` function.
 This is the smallest value I could use, as `1/10` would require additional 2 bytes (one for X and one for Z).
 
 If we want to move LEFT, we need to move X `1/9 * -SIN(angle)` and move Z `1/9 * COS(angle)`.
 If we want to move RIGHT, we need to move X `1/9 * SIN(angle)` and move Z `1/9 * -COS(angle)`.
-
 
 Now let's just summarize how we need to update X & Z for keys `a,s,d,w` (in that order because they map to `0,2,4,6`).
 Ignoring the `1/9` for now.
@@ -461,10 +424,10 @@ Ignoring the `1/9` for now.
 |---------|-------|-------|-------|-------|
 | **X**   | +SIN(angle) | -COS(angle) | -SIN(angle) | +COS(angle) |
 | **Z**   | -COS(angle) | -SIN(angle) | +COS(angle) | +SIN(angle) |
-| `e.which&6 `         |   0    |   2    |   4    |   6    |
+| `e.which&6`         |   0    |   2    |   4    |   6    |
 
 Great, now let's put them into an X array and a Z array.
-And add a space between each so we can simply do `XArray[e.which&6]` with no further modifications.
+And add a hole between each so we can simply do `XArray[e.which&6]` to access.
 
 ```js
 XDelta = [+SIN(angle),, -COS(angle),, -SIN(angle),, +COS(angle)]
@@ -483,20 +446,22 @@ This gives it an advantage over using `%` for array access.
 I also considered removing the gaps and doing something like `array[(e.which&6)/2]`, but that ended up longer so kept the gaps.
 In the final dweet, we could fit the event handler in the gaps no problem.
 
+```js
+J=[b=C(T),,a=S(T),,-b,,-a]
+```
+
 Now you might notice in the dweet the actual array is a bit different, and we do `i+2&6` for Z instead of `i-2&6`.
 This is where it gets confusing for me too.
 Hell, Z and X might need to be swapped for all I know.
 And angle and left and right might also be swapped.
+And to be honest, there's some linear algebra here that I don't fully understand.
+I had to muddle with it, swapping order and changing signs to get it to work. 
+The mouse handler was also `e=>T=e.x/-90` at some point, and I somehow figured out a way to remove the negative sign.
+But we still use the same general idea with "rotating through an array".
 
-The reason for all this rearranging is to ensure that the positives cos and sin appeared before the negatives in this array.
+Another reason for all this rearranging is to ensure that the positives cos and sin appeared before the negatives in this array.
 Otherwise we'd have to do something like `[a=-Sin(angle),..., -a]`, which is longer than `[a=Sin(angle),...,-a]`.
 
-we still use the same general idea with "rotating through an array".
-The final array (event handlers removed) looks like this:
-
-```js
-J=[b=C(T),,a=S(T),,-b,,-a]
-```
 
 Dwitter is nice in that `C` and `S` are predefined as `Math.cos` and `Math.sin`, saving a lot of chars here.
 But we can give it better variable names now and spacing.
@@ -531,60 +496,51 @@ onkeydown = (keyEvent) => {
 };
 ```
 
+## Ray Angle
+Now let's move on to the body of the `for` loop.
 
-Putting everything we have together.
+```
+R=xPos-R*S(D=angle+j/canvasWidth-.5)&zPos+R*C(D)
+    ?R+.1
+    :!x.fillRect(j--,540-1e3/R,2/R,canvasWidth/R)
+```
+
+This `R` is very similar to what `d` was in the original 23034 dweet:
 
 ```js
-let time = t;
-if (time === 0){
-    zPos = 7;
-    xPos = 7;
-    angle = Math.tan;
-}
+A=j/w*d-d/2
 
-c.width = c.width | 7;
-let canvasWidth = c.width;
-
-onmousemove = (mouseEvent) => {
-    angle = mouseEvent.x/90;
-};
-
-let deltaArray = [cosAngle = Math.cos(angle), , sinAngle = Math.sin(angle), , -cosAngle, , -sinAngle];
-
-onkeydown = (keyEvent) => {
-    let keyCode = keyEvent.which;
-    let xDeltaIndex = keyCode & 6;
-    let zDeltaIndex = keyCode + 2 & 6;
-    let deltaScale = 1 / 9;
-    
-    xPos += deltaArray[xDeltaIndex] * deltaScale;
-    zPos += deltaArray[zDeltaIndex] * deltaScale;
-};
-
-for(let j = canvasWidth;j;){
-    R=xPos-R*S(D=angle+j/canvasWidth-.5)&zPos+R*C(D)
-        ?R+.1
-        :!x.fillRect(j--,540-1e3/R,2/R,canvasWidth/R)
+if((X+A*b-d*a|Z-A*a-d*b)%9>2){
+}else{
+    x.fillRect(j--,540-1e3/d,1-1/d,2e3/d);
+    d=(1-1/d/d)/2e4;
+    X-=d*a;
+    Z-=d*b;
 }
 ```
 
-
-## Ray Marching loop
-Now let's move on to the body of the for loop.
-
-Starting with `R`, this is very similar to what `d` was in the original 23034 dweet.
 It's like "ray tracing depth".
 It starts at a low value, increments until a certain condition is reached, then draws on the screen.
 Depending on the specific condition, you get different patterns and different "walls" in the final scene.
 
-To create these rays, the original dweet, first offset the ray a bit to the left or right of the position, then it marched forward in the exact angle that the "player" was facing.
+To create these rays, the original dweet first offset the ray a bit to the left or right of the position, then it marched forward in the exact angle that the "player" was facing.
 As a result it created a orthographic projection.
+
+```js
+X+(A=j/w*d-d/2)*b-d*a   // ray x
+Z-A*a-d*b               // ray z
+```
 
 Unfortunately I couldn't keep this as it required too many chars.
 Instead I also used ray marching, but each ray started at the player's position `(xPos, zPos)`.
 Then marched in a different direction depending on the x position on the screen.
 So we have a perspective projection. 
 The look is different, but pretty close.
+
+```js
+X-R*S(D=T+j/w-.5)   // ray x
+Z+R*C(D)            // ray z
+```
 
 Now let's talk about how we march exactly, for which we'll need to define an angle to march in.
 This specific angle used here is:
@@ -612,15 +568,26 @@ This something is `R` in this case, which allows for us to move some depth away 
 In the actual dweet we do:
 
 ```js
-X - R*Sin(D)
-Z + R*Cos(D)
+X - R*S(D)
+Z + R*C(D)
 ```
 Idk why `-Sin` and `Cos` work, but they do.
 
+## Pattern Generation
+
 Now we can't just march forever.
 Once we have the X position of the ray and the Z position of the ray, we do an `&` operation.
-In the original dweet, it was something like `(rayX|rayZ)%9>2`, which made for a nicer pattern but I didn't have room.
+In the original dweet, it was
+
+```js
+(rayX|rayZ)%9>2
+```
+
+This made for a nicer pattern but I didn't have room.
 Just a simple `&` operation is good enough here to render some simple patterns.
+```js
+rayX&rayZ
+```
 
 With all this, we can clean up the for loop body.
 We can also call `j` something like `displayX`.
@@ -630,50 +597,75 @@ let rayAngle = angle + displayX / canvasWidth - 0.5;
 let rayX = xPos - R * Math.sin(rayAngle);
 let rayZ = zPos + R * Math.cos(rayAngle);
 let emptySpace = rayX & rayZ
+```
 
+
+By empty space here I mean "not a wall".
+
+## Ray Marching
+
+Now for the `R=` part.
+```js
 R=emptySpace
 ?R+.1
 :!x.fillRect(displayX--,540-1e3/R,2/R,canvasWidth/R)
 ```
-
-By empty space here I mean "not a wall".
-
-Now for the `R=` part.
 Similar to `T`, `R` is predefined by dwitter as an RGB function.
 This is great, but we don't need color here, so we used `R` for this "ray depth".
 This allows us to skip `R=` while avoiding errors when using `R` in `fillRect`.
 
-Because `R` is previously set to a function, we cannot do `R +=`.
-So we do `R=`.
-In the case that we hit "emptySpace", we simply do `R = R + .1`.
+Because `R` is previously set to a function, we cannot do `R += _`.
+So we do `R=_`.
+In the case that we hit "empty space", we simply do `R = R + .1`.
 This will advance the depth by `.1` units.
 
-But wait, what if `R` is set to a function?
-How could we increment `R`?
-Well if `R` is a function, then `rayX` and `rayZ` will evaluate to `NaN`
-That means `emptySpace` will be to `0`, which will set `R` to `!x.fillRect(...)`.
-That evaluates to `true`, allowing us to actually use it on the next iteration as if it were equal to `1` (as `true+.1 = 1.1`).
-This does mean that we ray march starting from 1 "unit" away from the player position, but we don't have any chars to spare.
+```js
+?R+.1
+```
+
+But wait, what if `R` is still the RGB function?
+How could we increment a function?
+Well, if `R` is a function, then `rayX` and `rayZ` will evaluate to `NaN`.
+That means `emptySpace` will be `0`, which will set `R` to `!x.fillRect(...)`.
+
+```js
+:!x.fillRect(...)
+```
+
+That evaluates to `true`, allowing us to use `R` on the next iteration as if it were equal to `1` (because `true+.1 = 1.1`).
+This does mean that we march starting from 1 "unit" away from the player position, but we don't have any chars to spare.
 
 The `!x.fillRect(displayX--,540-1e3/R,2/R,canvasWidth/R)` will only trigger once we hit a wall, meaning we only reset `R` to 1 when we hit a wall.
 
 ## Rendering
 
 That brings us to the final part:
-`x.fillRect(displayX--,540-1e3/R,2/R,canvasWidth/R)`
+
+```js
+x.fillRect(displayX--,540-1e3/R,2/R,canvasWidth/R)
+```
 
 `x` is of course the context, a shorthand from dwitter.
 `fillRect` takes 4 parameters: x position of the top left corner, y position of the top left corner, width, and height.
 
-### X position of the top left corner: `displayX--`
+### X position of the top left corner
+```js
+displayX--
+```
+
 We already know `displayX` goes from 1927 down to 0.
 So this directly corresponds to the position on the screen itself, no tricks here.
 
 We only decrement `j` when we hit a wall.
 So the for loop can loop many times without decrementing `j` as it marches the ray.
 
-### Height: `canvasWidth/R`
-### Y position of the top left corner: `540-1e3/R` and Height: `canvasWidth/R`
+### Y position of the top left corner and Height
+```js
+540-1e3/R
+```
+```js
+canvasWidth/R
+```
 This is where the 3D effect comes from.
 While not actually 3d, we draw the rectangles in such a way that closer "walls" appear higher and further walls appear shorter.
 To see exactly how, look at the height of this rectangle.
@@ -687,11 +679,14 @@ If ray depth is large (far), the rectangle will be shorter.
 If the ray depth is small (near), the rectangle will be taller.
 
 In the actual dweet, height is `w/R`.
-We already defined `w = canvasWidth` so it's cheaper to use `w` instead of something like `2e3`.
+We already defined `w = canvasWidth` so it's cheaper to use `w` instead of a number like `2e3`.
 
-### Width: `2/R`
-This might look strange, as `R` starts at 1 and increments by `+.1`.
-So this can have a max value of 2, and keep going down, even into values less than 1.
+### Width
+```js
+2/R
+```
+This might be confusing, as `R` starts at 1 and increments by `+.1`.
+So width can have a max value of 2, and then keep going down, into values less than 1.
 We can't draw a rectangle with a width between 1 and 0, but what this will do instead is draw a rectangle of width 1, but with reduced opacity.
 So `2/R` is effectively the opacity of the rectangle.
 
@@ -699,7 +694,11 @@ Because the default `fillStyle` is black and we're drawing on a white background
 I chose 2 instead of 1 just to make it a bit more opaque.
 3 doesn't look bad either.
 
-In the original, this was `1-1/R`.
+In the original, this was `1-1/d`.
+```js
+...,1-1/d,...
+```
+
 This meant that closer walls would appear brighter, and further walls would appear darker.
 While a cool effect, unfortunately I could not spare any chars and had to flip this.
 We now have a fog effect, with further walls fading in the distance and closer walls very dark.
@@ -727,8 +726,9 @@ if (emptySpace){
 ```
 
 
-## Final assembly
-And finally putting everything we have together, renaming dwitter shims, and initializing `rayDepth` to `R` to match dwitter:
+## 
+And finally putting everything we have together, renaming dwitter shims, and initializing `rayDepth` to `R` to match dwitter.
+This is over 1100 characters, which is a bit outside dwitter boundaries.
 
 ```js
 let canvas = c;
@@ -779,5 +779,3 @@ for (let displayX = canvasWidth; displayX; ) {
     }
 }
 ```
-
-This is over 1100 characters, which is a bit outside dwitter boundaries.
