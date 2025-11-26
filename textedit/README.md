@@ -1,8 +1,8 @@
-The uncompressed text editor
+# Dwitter Text Editor
 
 Inspired by the original dweet https://www.dwitter.net/d/34552
 
-From the comments we had
+From the comments we had:
 
 ```js
 t<1?s='\n':b='Backspace'
@@ -14,9 +14,9 @@ h=s.split('\n')
 for(i=h.length;i--;)x.fillText(h[i],0,60*i)
 ```
 
-CLocking in at 216 bytes. This looked neat so I decided to see if we could make it shorter.
+Clocking in at 216 bytes. This looked neat so I decided to see if we could make it shorter.
 
-After a bit of moving variables around, modifying the key check a bit, I got this
+After a bit of moving variables around, modifying the key check a bit, I got this:
 
 ```js
 t?e='Enter':s=''
@@ -28,10 +28,10 @@ h=s.split('\n')
 for(i=h.length;i--;)x.fillText(h[i],0,60+60*i)
 ```
 
-This is 194 bytes, which is actually enough to compress to 140 bytes using the eval(unescape(escape... stuff.
-However, that didn't really feel in the sprit of things, so I decided to see if I could make it shorter.
+This is 194 bytes, which is actually enough to compress to 140 bytes using the `eval(unescape(escape...))` stuff.
+However, that didn't really feel in the spirit of things, so I decided to see if I could make it shorter.
 
-After a lot more messing around, I got this at 138 bytes
+After a lot more messing around, I got this at 138 bytes:
 ```js
 t?onkeydown=k=>s={s:s.slice(x.reset(o=k.key),-1),r:s+`
 `,t:s}[o[4]]||s+o:s=`
@@ -44,7 +44,7 @@ Available for demo at https://www.dwitter.net/d/34556
 
 Now let's break it down.
 
-# Newlines
+## Newlines
 
 To make it look nicer, the first trick you see here is using a backtick, an actual newline in the code, and another back tick instead of `'\n'`.
 They are identical, but using backtick saves a byte.
@@ -58,7 +58,7 @@ s.split`
 ```
 
 This strange JS behavior allows us to skip the parenthesis when we call a method that accepts a string, as long as we use back ticks.
-What is really going on here is equivalent to 
+What is really going on here is equivalent to:
 
 ```js
 s.split(`
@@ -71,9 +71,9 @@ And an even more clear version:
 s.split('\n')
 ```
 
-However, this is 13 charactesr vs the 10 characters you see in the final result.
+However, this is 13 characters vs the 10 characters you see in the final result.
 
-With the newlines replaced, we have
+With the newlines replaced, we have:
 
 ```js
 t?onkeydown=k=>s={s:s.slice(x.reset(o=k.key),-1),r:s+'\n',t:s}[o[4]]||s+o:s='\n'
@@ -81,7 +81,7 @@ x.font='2cm a'
 s.split('\n').map((t,i)=>x.fillText(t,0,i*60))
 ```
 
-Now let's format it with indentation and spacing and semicolons
+Now let's format it with indentation and spacing and semicolons:
 
 ```js
 t
@@ -100,9 +100,9 @@ s.split('\n').map((t, i) =>
 );
 ```
 
-# Initialization
+## Initialization
 
-Starting with the "else" branch of the first ternary operator
+Starting with the "else" branch of the first ternary operator.
 
 ```js
 t
@@ -116,7 +116,7 @@ By assigning `s = '\n'` only when `t` evaluates to `false`, we will only set `s`
 Meaning, we will set it to `\n` exactly once, when the Dweet starts running.
 
 The event handler assignment in `true` branch of the ternary operator can actually be redefined on each frame of the Dweet.
-So we can move it out of the ternary, and reformat the else branch like so
+So we can move it out of the ternary, and reformat the else branch like so:
 
 ```js
 if (time === 0) {
@@ -124,7 +124,7 @@ if (time === 0) {
 }
 ```
 
-# Keyboard Event handling
+## Keyboard Event Handling
 
 That leaves us with the event handler defined in the `true` branch of the ternary operator.
 This is where the most bytes were reduced to fit the Dweet under 140 bytes.
@@ -150,7 +150,7 @@ You'll see why this works in our favor when we take a look at that value.
 s.slice(x.reset(o = k.key), -1),
 ```
 
-If we split it out by order of operations, this is equivalent to.
+If we split it out by order of operations, this is equivalent to:
 
 ```js
 o = k.key;
@@ -159,13 +159,13 @@ sliceResult = s.slice(resetResult, -1);
 ```
 
 First off, assigning `k.key` to `o` is pretty straightforward.
-https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
-This value looks like `D`, or `Backspace`, or `Shift`, or `3`.
+https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key.
+This value can look like `D`, or `Backspace`, or `Shift`, or `3`.
 We use it later, and it saves us a few bytes to assign it to a variable here.
 
 Then why do we pass `o` to `x.reset`?
 Easy, it takes no parameters.
-https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/reset
+https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/reset.
 So anything we pass will have no effect.
 And the previously empty parenthesis of `x.reset()` looked like a good place to put save `k.key` to a variable without needing an extra newline, comma, or semicolon.
 
@@ -185,7 +185,7 @@ This is exactly what we want when we hit backspace, we want the string to end up
 MDN: If indexEnd < 0, the index is counted from the end of the string
 ```
 
-Let's rewrite the onkeydown function a bit.
+Let's rewrite the `onkeydown` function a bit:
 
 ```js
 onkeydown = k => {
@@ -242,9 +242,9 @@ In this case, we simply append the key to the text.
 | Resulting `s`            |   Sliced s   |   s + `\n`   |   s | s + `key`
 
 I chose a JS objection to store this mapping as it was shorter than using ternary operators.
-And we couldn't do something like `s+=...` as you cannot add anythng to `s` to get the desired result of a backspace press.
+And we couldn't do something like `s+=...` as you cannot add anything to `s` to get the desired result of a backspace press.
 
-Reorganizing this a bit better
+Reorganizing this a bit better:
 
 ```js
 const mapping = {
@@ -263,9 +263,9 @@ if (nextTextValue !== undefined) {
 }
 ```
 
-# Font Size
+## Font Size
 
-This one is unchanged from the original dweet comment
+This one is unchanged from the original dweet comment.
 
 ```js
 x.font = '2cm a';
@@ -273,10 +273,10 @@ x.font = '2cm a';
 
 
 How it works exactly is kinda interesting.
-If you look at the MDN documentation 
-https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/font
-It shows that font expects an argument like `ultra-condensed small-caps 1.2em "Fira Sans", sans-serif`
-The formal syntax is
+If you look at the MDN documentation.
+https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/font.
+It shows that font expects an argument like `ultra-condensed small-caps 1.2em "Fira Sans", sans-serif`.
+The formal syntax is:
 
 ```
 font =
@@ -288,16 +288,16 @@ What the fuck is this?
 No idea.
 But it seems that at least <'font-size'> and <'font-family'> are required.
 
-So for font size, here is documentation on what you can provide: https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/font-size
+So for font size, here is documentation on what you can provide: https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/font-size.
 You might be familiar with something like `24px` or `80%` or `2rem`.
-For our purposes, `2cm` looks good enough and is just 3 bytes.
+For our purposes, `2cm` looks good and is just 3 bytes.
 
 For the font-family, somehow `a` resolves to a font.
 I've also seen `x.font="2in'"` as in https://www.dwitter.net/d/34414.
 I could've saved a byte by doing `x.font="2cm'", but I was testing this on Safari, where that has no effect on the font size, and results in tiny text.
 So `2cm a` it is.
 
-This is outside of the onkeydown handler because whenver x.reset() is called, we need to set the font again.
+This is outside of the `onkeydown` handler because whenever `x.reset()` is called, we need to set the font again.
 Otherwise the fillText will appear tiny.
 By setting `x.font` to this value every time the dweet function is called, we ensure the text stays the right size.
 
@@ -305,13 +305,13 @@ By setting `x.font` to this value every time the dweet function is called, we en
 Any modifications to this messed up the font, making the text tiny or nonexistent.
 So I left it as is.
 
-CanvasRenderingContext2D has no `fontSize` or `fontFamily` properies, just `font`, so this is the the clearest I can make this line.
+CanvasRenderingContext2D has no `fontSize` or `fontFamily` properties, just `font`, so this is the the clearest I can make this line.
 
 ```js
 context.font = '2cm a';
 ```
 
-# Text Rendering
+## Text Rendering
 
 Now the last part, render the text.
 
@@ -328,8 +328,8 @@ h=s.split('\n')
 for(i=h.length;i--;)x.fillText(h[i],0,60*i)
 ```
 
-The thing about fillText is that is does not handle newlines as you'd expect.
-https://stackoverflow.com/questions/5026961/html5-canvas-ctx-filltext-wont-do-line-breaks
+The thing about fillText is that it does not handle newlines as you'd expect.
+https://stackoverflow.com/questions/5026961/html5-canvas-ctx-filltext-wont-do-line-breaks.
 So we need to make a separate `fillText` call for each new line.
 Since `s` is a string that just keeps getting appended to, rather than an array, we first need to split it by newline.
 
@@ -345,7 +345,7 @@ And you can even get an index argument.
 ```
 
 Once we've split on new lines, `t` will be each individual line, and `i` will be the index of that line.
-`fillText` can take 3 paramters, the text, the x coordinate, and the y coordinate.
+`fillText` can take 3 parameters, the text, the x coordinate, and the y coordinate.
 We use the exact same coordinates used in the original, `0` to align it to the left of the screen, and `60 * i` to give a nice spacing that works well with `2cm`.
 
 We can give better variable names and split out this part for clarity, and use an equivalent `for` loop.
@@ -364,9 +364,9 @@ for (let i = 0; i < lines.length; i++){
 }
 ```
 
-# Final result
+## Final Result
 
-Putting it all together, we get
+Putting it all together, we get:
 
 
 ```js
@@ -414,4 +414,4 @@ for (let i = 0; i < lines.length; i++) {
 }
 ```
 
-Which will run fine on dwitter
+Which will run fine on dwitter.
