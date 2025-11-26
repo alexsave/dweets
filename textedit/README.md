@@ -178,7 +178,7 @@ Then it gets weirder when we pass the result of `reset` to `s.slice`.
 The original does `s.slice(0,-1)`.
 The return value of `reset` is `undefined`, which luckily for us, `slice` handles as `0`.
 So this is the same as `s.slice(0,-1)`.
-The `-1` value means that the end index is 1 less than the last char of the string, so it's equal to `s.slice(0, s.length-1)`;
+The `-1` value means that the end index is 1 less than the last char of the string, so it's equal to `s.slice(0, s.length-1)`.
 This is exactly what we want when we hit backspace, we want the string to end up being everything in the string except the last character of the string.
 
 ```
@@ -211,7 +211,7 @@ But not 0, you'll see why.
 
 When we hit backspace, we want to delete characters, when we hit enter, we want to add a new line.
 But you might also be wondering why we need to handle the Shift key?
-The way `onkeydown` works is when you input a uppercase letter using the Shift key + the letter, you don't just get an event for the uppercase letter.
+Well, the way `onkeydown` works is, when you input a uppercase letter using the Shift key + the letter, you don't just get an event for the uppercase letter.
 You also get an event for the shift key press.
 The original comment filtered out Shift keys with specifically with the `o.length>2` part.
 
@@ -230,18 +230,18 @@ However, most of the key presses will get the value after the `||`.
 text = {...}[key[4]] || text + key
 ```
 
-If you try to get `key[4]` when the `key` is something like `D`, just normal text, you will get `undefined`.
+If you try to get `key[4]` when the `key` is something like `D`, just a normal letter, you will get `undefined`.
 `undefined` is not a key in this JS object, which means that accessing the `undefined` key of the object will result in also `undefined`.
 It is falsey, so this OR statement will evaluate to whatever is after the `||`.
 In this case, we simply append the key to the text.
 
 | Button                   |   Backspace    |   Enter    |   Shift    | D |
 |:--------------------:|:------:|:------:|:------:|:------:|
-| `k.key`            |   `Backspace`   |   `Enter   `   |   `Shift   `    |  `D`
-| `k.key[4]`            |   `    s`   |   `    r`   |   `    t`   | `undefined`
+| `k.key`            |   `Backspace`   |   `Enter`   |   `Shift`    |  `D`
+| `k.key[4]`            |   `s`   |   `r`   |   `t`   | `undefined`
 | Resulting `s`            |   Sliced s   |   s + `\n`   |   s | s + `key`
 
-I chose a JS objection to store this mapping as it was shorter than using ternary operators.
+I chose a JS object to store this mapping as it was shorter than using ternary operators.
 And we couldn't do something like `s+=...` as you cannot add anything to `s` to get the desired result of a backspace press.
 
 Reorganizing this a bit better:
@@ -294,7 +294,7 @@ For our purposes, `2cm` looks good and is just 3 bytes.
 
 For the font-family, somehow `a` resolves to a font.
 I've also seen `x.font="2in'"` as in https://www.dwitter.net/d/34414.
-I could've saved a byte by doing `x.font="2cm'", but I was testing this on Safari, where that has no effect on the font size, and results in tiny text.
+I could've saved a byte by doing `x.font="2cm'"`, but I was testing this on Safari, where that has no effect on the font size, and results in tiny text.
 So `2cm a` it is.
 
 This is outside of the `onkeydown` handler because whenever `x.reset()` is called, we need to set the font again.
@@ -328,7 +328,7 @@ h=s.split('\n')
 for(i=h.length;i--;)x.fillText(h[i],0,60*i)
 ```
 
-The thing about fillText is that it does not handle newlines as you'd expect.
+The thing about `fillText` is that it does not handle newlines as you'd expect.
 https://stackoverflow.com/questions/5026961/html5-canvas-ctx-filltext-wont-do-line-breaks.
 So we need to make a separate `fillText` call for each new line.
 Since `s` is a string that just keeps getting appended to, rather than an array, we first need to split it by newline.
@@ -337,7 +337,7 @@ Since `s` is a string that just keeps getting appended to, rather than an array,
 s.split('\n')
 ```
 
-The nice thing about map is that it will execute the function you pass to it in order.
+The nice thing about map is that it will execute the function you pass to it, you don't even need to return a value.
 And you can even get an index argument.
 
 ```js
